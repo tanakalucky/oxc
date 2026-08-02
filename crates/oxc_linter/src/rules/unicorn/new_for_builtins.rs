@@ -175,157 +175,229 @@ fn test() {
     use crate::tester::Tester;
 
     let pass = vec![
-        "const foo = new Object()",
-        "const foo = new Array()",
-        "const foo = new ArrayBuffer()",
-        "const foo = new BigInt64Array()",
-        "const foo = new BigUint64Array()",
-        "const foo = new DataView()",
-        "const foo = new Error()",
-        "const foo = new Float16Array()",
-        "const foo = new Float32Array()",
-        "const foo = new Float64Array()",
-        "const foo = new Function()",
-        "const foo = new Int8Array()",
-        "const foo = new Int16Array()",
-        "const foo = new Int32Array()",
-        "const foo = new Map()",
-        "const foo = new Map([['foo', 'bar'], ['unicorn', 'rainbow']])",
-        "const foo = new WeakMap()",
-        "const foo = new Set()",
-        "const foo = new WeakSet()",
-        "const foo = new Promise()",
-        "const foo = new RegExp()",
-        "const foo = new UInt8Array()",
-        "const foo = new UInt16Array()",
-        "const foo = new UInt32Array()",
-        "const foo = new Uint8ClampedArray()",
-        "const foo = BigInt()",
-        "const foo = Boolean()",
-        "const foo = Number()",
-        "const foo = String()",
-        "const foo = Symbol()",
-        "
+        ("const foo = new Object()", None, None),
+        ("const foo = new Array()", None, None),
+        ("const foo = new ArrayBuffer()", None, None),
+        ("const foo = new BigInt64Array()", None, None),
+        ("const foo = new BigUint64Array()", None, None),
+        ("const foo = new DataView()", None, None),
+        ("const foo = new Error()", None, None),
+        ("const foo = new Float16Array()", None, None),
+        ("const foo = new Float32Array()", None, None),
+        ("const foo = new Float64Array()", None, None),
+        ("const foo = new Function()", None, None),
+        ("const foo = new Int8Array()", None, None),
+        ("const foo = new Int16Array()", None, None),
+        ("const foo = new Int32Array()", None, None),
+        ("const foo = new Map()", None, None),
+        ("const foo = new Map([['foo', 'bar'], ['unicorn', 'rainbow']])", None, None),
+        ("const foo = new WeakMap()", None, None),
+        ("const foo = new Set()", None, None),
+        ("const foo = new WeakSet()", None, None),
+        ("const foo = new Promise()", None, None),
+        ("const foo = new RegExp()", None, None),
+        ("const foo = new UInt8Array()", None, None),
+        ("const foo = new UInt16Array()", None, None),
+        ("const foo = new UInt32Array()", None, None),
+        ("const foo = new Uint8ClampedArray()", None, None),
+        ("const foo = BigInt()", None, None),
+        ("const foo = Boolean()", None, None),
+        ("const foo = Number()", None, None),
+        ("const foo = String()", None, None),
+        ("const foo = Symbol()", None, None),
+        (
+            "
                         import { Map } from 'immutable';
                         const m = Map();
                     ",
-        "
+            None,
+            None,
+        ),
+        (
+            "
                         const {Map} = require('immutable');
                         const foo = Map();
                     ",
-        "
+            None,
+            None,
+        ),
+        (
+            "
                         const {String} = require('guitar');
                         const lowE = new String();
                     ",
-        "
+            None,
+            None,
+        ),
+        (
+            "
                         import {String} from 'guitar';
                         const lowE = new String();
                     ",
-        "new Foo();Bar();",
-        "Foo();new Bar();",
-        "const isObject = v => Object(v) === v;",
-        "const isObject = v => globalThis.Object(v) === v;",
-        "(x) !== Object(x)",
-        // r#"new Symbol("")"#, // {"globals": {"Symbol": "off"}},
-        "const foo = new Date();",
+            None,
+            None,
+        ),
+        ("new Foo();Bar();", None, None),
+        ("Foo();new Bar();", None, None),
+        ("const isObject = v => Object(v) === v;", None, None),
+        ("const isObject = v => globalThis.Object(v) === v;", None, None),
+        ("(x) !== Object(x)", None, None),
+        // (
+        //     r#"new Symbol("")"#,
+        //     None,
+        //     Some(serde_json::json!({ "globals": { "Symbol": "off" } })),
+        // ),
+        ("const foo = new Date();", None, None),
     ];
 
     let fail = vec![
-        "const object = (Object)();",
-        r#"const symbol = new (Symbol)("");"#,
-        r#"const symbol = new /* comment */ Symbol("");"#,
-        "const symbol = new Symbol;",
-        "() => {
+        ("const object = (Object)();", None, None),
+        (r#"const symbol = new (Symbol)("");"#, None, None),
+        (r#"const symbol = new /* comment */ Symbol("");"#, None, None),
+        ("const symbol = new Symbol;", None, None),
+        (
+            "() => {
                 return new // 1
                     Symbol();
             }",
-        "() => {
+            None,
+            None,
+        ),
+        (
+            "() => {
                 return (
                     new // 2
                         Symbol()
                 );
             }",
-        "() => {
+            None,
+            None,
+        ),
+        (
+            "() => {
                 return new // 3
                     (Symbol);
             }",
-        "() => {
+            None,
+            None,
+        ),
+        (
+            "() => {
                 return new // 4
                     Symbol;
             }",
-        "() => {
+            None,
+            None,
+        ),
+        (
+            "() => {
                 return (
                     new // 5
                         Symbol
                 );
             }",
-        "() => {
+            None,
+            None,
+        ),
+        (
+            "() => {
                 return (
                     new // 6
                         (Symbol)
                 );
             }",
-        "() => {
+            None,
+            None,
+        ),
+        (
+            "() => {
                 throw new // 1
                     Symbol();
             }",
-        "() => {
+            None,
+            None,
+        ),
+        (
+            "() => {
                 return new /**/ Symbol;
             }",
-        "new globalThis.String()",
-        "new global.String()",
-        "new self.String()",
-        "new window.String()",
+            None,
+            None,
+        ),
+        ("new globalThis.String()", None, None),
+        ("new global.String()", None, None),
+        ("new self.String()", None, None),
+        ("new window.String()", None, None),
         // TODO: Fix.
-        // "const {String} = globalThis;
+        // (
+        //     "const {String} = globalThis;
         //     new String();",
-        // "const {String: RenamedString} = globalThis;
+        //     None,
+        //     None,
+        // ),
+        // (
+        //     "const {String: RenamedString} = globalThis;
         //     new RenamedString();",
-        // "const RenamedString = globalThis.String;
+        //     None,
+        //     None,
+        // ),
+        // (
+        //     "const RenamedString = globalThis.String;
         //     new RenamedString();",
-        "globalThis.Array()",
-        "global.Array()",
-        "self.Array()",
-        "window.Array()",
-        // "const {Array: RenamedArray} = globalThis;
+        //     None,
+        //     None,
+        // ),
+        ("globalThis.Array()", None, None),
+        ("global.Array()", None, None),
+        ("self.Array()", None, None),
+        ("window.Array()", None, None),
+        // (
+        //     "const {Array: RenamedArray} = globalThis;
         //     RenamedArray();",
-        // We do not support configuring globals like this:
-        // "globalThis.Array()", // {"globals": {"Array": "off"}},
-        // "const {Array} = globalThis;
-        //     Array();", // {"globals": {"Symbol": "off"}},
-        "const foo = Object()",
-        "const foo = Array()",
-        "const foo = ArrayBuffer()",
-        "const foo = BigInt64Array()",
-        "const foo = BigUint64Array()",
-        "const foo = DataView()",
-        "const foo = Error()",
-        "const foo = Error('Foo bar')",
-        // "const foo = Float16Array()",
-        "const foo = Float32Array()",
-        "const foo = Float64Array()",
-        "const foo = Function()",
-        "const foo = Int8Array()",
-        "const foo = Int16Array()",
-        "const foo = Int32Array()",
-        "const foo = (( Map ))()",
-        "const foo = Map([['foo', 'bar'], ['unicorn', 'rainbow']])",
-        "const foo = WeakMap()",
-        "const foo = Set()",
-        "const foo = WeakSet()",
-        "const foo = Promise()",
-        "const foo = RegExp()",
-        "const foo = Uint8Array()",
-        "const foo = Uint16Array()",
-        "const foo = Uint32Array()",
-        "const foo = Uint8ClampedArray()",
-        "const foo = new BigInt(123)",
-        "const foo = new Boolean()",
-        "const foo = new Number()",
-        "const foo = new Number('123')",
-        "const foo = new String()",
-        "const foo = new Symbol()",
-        "function varCheck() {
+        //     None,
+        //     None,
+        // ),
+        // ("globalThis.Array()", None, Some(serde_json::json!({ "globals": { "Array": "off" } }))),
+        // (
+        //     "const {Array} = globalThis;
+        //     Array();",
+        //     None,
+        //     Some(serde_json::json!({ "globals": { "Symbol": "off" } })),
+        // ),
+        ("const foo = Object()", None, None),
+        ("const foo = Array()", None, None),
+        ("const foo = ArrayBuffer()", None, None),
+        ("const foo = BigInt64Array()", None, None),
+        ("const foo = BigUint64Array()", None, None),
+        ("const foo = DataView()", None, None),
+        ("const foo = Error()", None, None),
+        ("const foo = Error('Foo bar')", None, None),
+        // ("const foo = Float16Array()", None, None),
+        ("const foo = Float32Array()", None, None),
+        ("const foo = Float64Array()", None, None),
+        ("const foo = Function()", None, None),
+        ("const foo = Int8Array()", None, None),
+        ("const foo = Int16Array()", None, None),
+        ("const foo = Int32Array()", None, None),
+        ("const foo = (( Map ))()", None, None),
+        ("const foo = Map([['foo', 'bar'], ['unicorn', 'rainbow']])", None, None),
+        ("const foo = WeakMap()", None, None),
+        ("const foo = Set()", None, None),
+        ("const foo = WeakSet()", None, None),
+        ("const foo = Promise()", None, None),
+        ("const foo = RegExp()", None, None),
+        ("const foo = Uint8Array()", None, None),
+        ("const foo = Uint16Array()", None, None),
+        ("const foo = Uint32Array()", None, None),
+        ("const foo = Uint8ClampedArray()", None, None),
+        ("const foo = new BigInt(123)", None, None),
+        ("const foo = new Boolean()", None, None),
+        ("const foo = new Number()", None, None),
+        ("const foo = new Number('123')", None, None),
+        ("const foo = new String()", None, None),
+        ("const foo = new Symbol()", None, None),
+        (
+            "function varCheck() {
                 {
                     var WeakMap = function() {};
                 }
@@ -344,17 +416,28 @@ fn test() {
                 }
                 return Map()
             }",
-        "function foo() {
+            None,
+            None,
+        ),
+        (
+            "function foo() {
                 return(globalThis).Map()
             }",
-        "const foo = Date();",
-        "const foo = globalThis.Date();",
-        "function foo() {
+            None,
+            None,
+        ),
+        ("const foo = Date();", None, None),
+        ("const foo = globalThis.Date();", None, None),
+        (
+            "function foo() {
                 return(globalThis).Date();
             }",
-        "const foo = Date(/*comment*/);",
-        "const foo = globalThis/*comment*/.Date();",
-        "const foo = Date(bar);",
+            None,
+            None,
+        ),
+        ("const foo = Date(/*comment*/);", None, None),
+        ("const foo = globalThis/*comment*/.Date();", None, None),
+        ("const foo = Date(bar);", None, None),
     ];
 
     Tester::new(NewForBuiltins::NAME, NewForBuiltins::PLUGIN, pass, fail).test_and_snapshot();
