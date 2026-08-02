@@ -4,7 +4,9 @@ use oxc_macros::declare_oxc_lint;
 use oxc_span::Span;
 use oxc_syntax::operator::BinaryOperator;
 
-use crate::{AstNode, context::LintContext, globals::GLOBAL_OBJECT_NAMES, rule::Rule};
+use crate::{
+    AstNode, config::GlobalValue, context::LintContext, globals::GLOBAL_OBJECT_NAMES, rule::Rule,
+};
 
 fn enforce(span: Span, fn_name: &str) -> OxcDiagnostic {
     OxcDiagnostic::warn(format!("Use `new {fn_name}()` instead of `{fn_name}()`")).with_label(span)
@@ -109,12 +111,11 @@ fn is_expr_global_builtin<'a, 'b>(
 ) -> Option<&'b str> {
     let expr = expr.without_parentheses();
     if let Expression::Identifier(ident) = expr {
-        let name = ident.name.as_str();
-        if !ctx.scoping().root_unresolved_references().contains_key(name) {
+        if !ctx.is_reference_to_global_variable(ident) {
             return None;
         }
 
-        Some(name)
+        Some(ident.name.as_str())
     } else {
         let member_expr = expr.as_member_expression()?;
 
@@ -122,7 +123,13 @@ fn is_expr_global_builtin<'a, 'b>(
             return None;
         };
 
-        if !GLOBAL_OBJECT_NAMES.contains(&ident.name.as_str()) {
+        let name = ident.name.as_str();
+
+        if !GLOBAL_OBJECT_NAMES.contains(&name) {
+            return None;
+        }
+
+        if ctx.globals().get(name).is_some_and(|value| *value == GlobalValue::Off) {
             return None;
         }
 
