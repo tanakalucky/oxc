@@ -242,11 +242,7 @@ fn test() {
         ("const isObject = v => Object(v) === v;", None, None),
         ("const isObject = v => globalThis.Object(v) === v;", None, None),
         ("(x) !== Object(x)", None, None),
-        // (
-        //     r#"new Symbol("")"#,
-        //     None,
-        //     Some(serde_json::json!({ "globals": { "Symbol": "off" } })),
-        // ),
+        (r#"new Symbol("")"#, None, Some(serde_json::json!({ "globals": { "Symbol": "off" } }))),
         ("const foo = new Date();", None, None),
     ];
 
@@ -357,7 +353,7 @@ fn test() {
         //     None,
         //     None,
         // ),
-        // ("globalThis.Array()", None, Some(serde_json::json!({ "globals": { "Array": "off" } }))),
+        ("globalThis.Array()", None, Some(serde_json::json!({ "globals": { "Array": "off" } }))),
         // (
         //     "const {Array} = globalThis;
         //     Array();",
